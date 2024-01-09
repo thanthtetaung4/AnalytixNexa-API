@@ -31,7 +31,7 @@ jobs:
         run: echo "export FIREBASE_ADMIN_KEY=${{secrets.FIREBASE_ADMIN_KEY}}" >> .env # Store directly in .env
 
       - name: Zip artifact for deployment
-        run: zip release.zip ./* -r .enc
+        run: zip release.zip ./* -r .env
 
       - name: Upload artifact for deployment jobs
         uses: actions/upload-artifact@v3
