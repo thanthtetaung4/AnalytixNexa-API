@@ -10,10 +10,11 @@ CORS(app, origins=["*"])
 app.config['TEMPLATES_AUTO_RELOAD'] = True
 
 # Initialize Firebase Admin SDK
-cred = credentials.Certificate(json.loads(os.getenv("FIREBASE_ADMIN_KEY")))
+
 
 try:
     firebase_admin_key = os.environ.get("FIREBASE_ADMIN_KEY")
+    print(firebase_admin_key)
     cred = credentials.Certificate(json.loads(firebase_admin_key))
 # firebase_admin.initialize_app(cred)
 
@@ -56,6 +57,10 @@ try:
         except Exception as e:
             return jsonify({"error": str(e)}), 500
 except Exception as e:
+    @app.route('/')
+    def home():
+        return render_template('home.html')
+    
     print("Error loading Firebase Admin key:", e)
 if __name__ == '__main__':
     app.run(debug=True)
