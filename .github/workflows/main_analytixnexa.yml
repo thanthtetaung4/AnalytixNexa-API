@@ -3,15 +3,14 @@
 # More info on Python, GitHub Actions, and Azure App Service: https://aka.ms/python-webapps-actions
 
 name: Build and deploy Python app to Azure Web App - analytixnexa
-env:
-  FIREBASE_ADMIN_KEY: ${{ secrets.FIREBASE_ADMIN_KEY }}
 
 on:
   push:
     branches:
       - main
   workflow_dispatch:
-
+env:
+  FIREBASE_ADMIN_KEY: ${{ secrets.FIREBASE_ADMIN_KEY }}
 jobs:
   build:
     runs-on: ubuntu-latest
