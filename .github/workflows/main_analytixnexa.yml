@@ -11,12 +11,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v2
 
       - name: Set up Python version
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v2
         with:
-          python-version: "3.12"
+          python-version: "3.8"  # Updated to a stable Python version
 
       - name: Create and start virtual environment
         run: |
@@ -26,44 +27,36 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      # Optional: Add step to run tests here (PyTest, Django test suites, etc.)
       - name: Set environment variable for app.py
-        run: echo "export FIREBASE_ADMIN_KEY=${{secrets.FIREBASE_ADMIN_KEY}}" >> .env # Store directly in .env
+        run: echo "FIREBASE_ADMIN_KEY=${{secrets.FIREBASE_ADMIN_KEY}}" >> .env  # Updated the environment variable name
 
       - name: Zip artifact for deployment
-        run: zip release.zip ./* -r .env
+        run: zip -r release.zip ./*
 
       - name: Upload artifact for deployment jobs
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v2
         with:
           name: python-app
-          path: |
-            release.zip
-            !venv/
-            .env/
+          path: release.zip
 
   deploy:
     runs-on: ubuntu-latest
     needs: build
     environment:
       name: "Production"
-      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
 
     steps:
       - name: Download artifact from build job
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v2
         with:
           name: python-app
 
       - name: Unzip artifact for deployment
-        run: unzip release.zip
+        run: unzip -o release.zip
 
       - name: "Deploy to Azure Web App"
         uses: azure/webapps-deploy@v2
-        id: deploy-to-webapp
         with:
           app-name: "analytixnexa"
           slot-name: "Production"
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_7E88576ADFA648F5A2E74C575A83C5AD }}
-          env: |
-            FIREBASE_ADMIN_KEY=${{ secrets.FIREBASE_ADMIN_KEY }}
