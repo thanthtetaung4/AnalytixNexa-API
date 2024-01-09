@@ -17,7 +17,7 @@ jobs:
       - name: Set up Python version
         uses: actions/setup-python@v2
         with:
-          python-version: "3.8"  # Updated to a stable Python version
+          python-version: "3.12"  # Updated to a stable Python version
 
       - name: Create and start virtual environment
         run: |
