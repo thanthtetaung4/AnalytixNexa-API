@@ -1,7 +1,3 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More GitHub Actions for Azure: https://github.com/Azure/actions
-# More info on Python, GitHub Actions, and Azure App Service: https://aka.ms/python-webapps-actions
-
 name: Build and deploy Python app to Azure Web App - analytixnexa
 
 on:
@@ -20,7 +16,7 @@ jobs:
       - name: Set up Python version
         uses: actions/setup-python@v1
         with:
-          python-version: '3.12'
+          python-version: "3.12"
 
       - name: Create and start virtual environment
         run: |
@@ -31,8 +27,11 @@ jobs:
         run: pip install -r requirements.txt
 
       # Optional: Add step to run tests here (PyTest, Django test suites, etc.)
+      - name: Set environment variable for app.py
+        run: echo "export FIREBASE_ADMIN_KEY=${{secrets.FIREBASE_ADMIN_KEY}}" >> .env # Store directly in .env
+
       - name: Zip artifact for deployment
-        run: zip release.zip ./* -r
+        run: zip release.zip ./* -r .env
 
       - name: Upload artifact for deployment jobs
         uses: actions/upload-artifact@v3
@@ -41,12 +40,13 @@ jobs:
           path: |
             release.zip
             !venv/
+            .env/
 
   deploy:
     runs-on: ubuntu-latest
     needs: build
     environment:
-      name: 'Production'
+      name: "Production"
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
 
     steps:
@@ -58,10 +58,12 @@ jobs:
       - name: Unzip artifact for deployment
         run: unzip release.zip
 
-      - name: 'Deploy to Azure Web App'
+      - name: "Deploy to Azure Web App"
         uses: azure/webapps-deploy@v2
         id: deploy-to-webapp
         with:
-          app-name: 'analytixnexa'
-          slot-name: 'Production'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_432B265E900D4AF088A5DAF47956F2E4 }}
+          app-name: "analytixnexa"
+          slot-name: "Production"
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_7E88576ADFA648F5A2E74C575A83C5AD }}
+          env: |
+            FIREBASE_ADMIN_KEY=${{ secrets.FIREBASE_ADMIN_KEY }}
