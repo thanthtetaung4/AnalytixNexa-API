@@ -10,7 +10,7 @@ CORS(app, origins=["*"])
 app.config['TEMPLATES_AUTO_RELOAD'] = True
 
 # Initialize Firebase Admin SDK
-cred = credentials.Certificate("analytixnexa-firebase-adminsdk-qehy2-657f28e75e.json")
+cred = credentials.Certificate(json.loads(os.getenv("FIREBASE_ADMIN_KEY")))
 
 
 # firebase_admin.initialize_app(cred)
