@@ -4,7 +4,9 @@ import firebase_admin
 from flask import Flask, jsonify, render_template
 from firebase_admin import credentials, storage, initialize_app
 from flask_cors import CORS
+from dotenv import load_dotenv
 
+load_dotenv()
 app = Flask(__name__)
 CORS(app, origins=["*"])
 app.config['TEMPLATES_AUTO_RELOAD'] = True
