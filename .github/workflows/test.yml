@@ -35,12 +35,12 @@ jobs:
           echo "${{ secrets.PRIVATE_KEY }}" > .env
           echo "${{ secrets.PRIVATE_KEY_ID }}" > .env
         env: |
-          AUTH_PROVIDER_X509_CERT_URL="${{ secrets.AUTH_PROVIDER_X509_CERT_URL }}"
-          CLIENT_EMAIL="${{ secrets.CLIENT_EMAIL}}"
-          CLIENT_ID="${{ secrets.CLIENT_ID }}"
-          CLIENT_PROVIDER_X509_CERT_URL="${{ secrets.CLIENT_PROVIDER_X509_CERT_URL }}"
-          PRIVATE_KEY="${{ secrets.PRIVATE_KEY }}"
-          PRIVATE_KEY_ID="${{ secrets.PRIVATE_KEY_ID }}"
+          AUTH_PROVIDER_X509_CERT_URL:"${{ secrets.AUTH_PROVIDER_X509_CERT_URL }}"
+          CLIENT_EMAIL:"${{ secrets.CLIENT_EMAIL}}"
+          CLIENT_ID:"${{ secrets.CLIENT_ID }}"
+          CLIENT_PROVIDER_X509_CERT_URL:"${{ secrets.CLIENT_PROVIDER_X509_CERT_URL }}"
+          PRIVATE_KEY:"${{ secrets.PRIVATE_KEY }}"
+          PRIVATE_KEY_ID:"${{ secrets.PRIVATE_KEY_ID }}"
           
 
       - name: Zip artifact for deployment
