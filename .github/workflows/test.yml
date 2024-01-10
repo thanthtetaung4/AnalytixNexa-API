@@ -27,7 +27,7 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Create key.json from secret
-        echo "<span class="math-inline">\{\{ secrets\.KEY \}\}" \| tee key\.json \> /dev/null
+        run: echo "<span class="math-inline">\{\{ secrets\.KEY \}\}" \| tee key\.json \> /dev/null
 
 
       - name: Zip artifact for deployment
