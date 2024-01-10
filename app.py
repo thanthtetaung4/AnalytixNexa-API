@@ -13,7 +13,20 @@ app.config['TEMPLATES_AUTO_RELOAD'] = True
 
 
 try:
-    cred = credentials.Certificate("./key.json")
+    credential = {
+        "type": "service_account",
+        "project_id": "analytixnexa",
+        "private_key_id": os.environ.get("PRIVATE_KEY_ID"),
+        "private_key": os.environ.get("PRIVATE_KEY").replace(r'\n', '\n'),  # CHANGE HERE
+        "client_email": os.environ.get("CLIENT_EMAIL"),
+        "client_id": os.environ.get("CLIENT_ID"),
+        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+        "token_uri": "https://oauth2.googleapis.com/token",
+        "auth_provider_x509_cert_url": os.environ.get("AUTH_PROVIDER_X509_CERT_URL"),
+        "client_x509_cert_url": os.environ.get("AUTH_PROVIDER_X509_CERT_URL")
+    }
+    cred = credentials.Certificate(credential)
+    # cred = credentials.Certificate("./key.json")
         
     # firebase_admin.initialize_app(cred)
 
