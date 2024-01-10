@@ -73,7 +73,7 @@ try:
 except Exception as e:
     @app.route('/')
     def home():
-        return render_template('home.html')
+        return render_template('error.html')
     @app.route('/bad')
     def bad():
         credential = {
