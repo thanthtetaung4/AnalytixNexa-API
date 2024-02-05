@@ -1,17 +1,56 @@
 import os
 import json
 import firebase_admin
-from flask import Flask, jsonify, render_template
+from flask import Flask, jsonify, render_template, request
 from firebase_admin import credentials, storage, initialize_app
 from flask_cors import CORS
+from dotenv import load_dotenv
+import pandas as pd
+from io import StringIO
 
-
+load_dotenv()
 app = Flask(__name__)
 CORS(app, origins=["*"])
 app.config['TEMPLATES_AUTO_RELOAD'] = True
 
 # Initialize Firebase Admin SDK
+def product_preference_analysis(dataset):
+    # Example: Count the occurrences of each product
+    product_counts = dataset['product'].value_counts()
 
+    # Convert to list of dictionaries
+    result_list = [{'product': product, 'count': count} for product, count in product_counts.items()]
+
+    return result_list
+
+def sales_analysis(dataset):
+    # Example: Calculate total sales and average sale
+    total_sales = dataset['sale'].sum()
+    average_sale = dataset['sale'].mean()
+    return total_sales,average_sale
+
+def customer_behavior_analysis(dataset):
+    # Example: Analyze customer behavior by counting the number of unique customers
+    unique_customers = dataset['customer'].nunique()
+    return unique_customers
+
+def temporal_analysis(dataset):
+    # Example: Analyze temporal patterns by calculating monthly sales and unit price for each product
+    dataset['date'] = pd.to_datetime(dataset['date'])
+    dataset['month_year'] = dataset['date'].dt.to_period('M')
+    
+    result = []
+
+    for period, group in dataset.groupby('month_year'):
+        monthly_sales_unit_price = group.groupby('product').agg({'sale': 'sum', 'unit_price': 'mean'}).reset_index()
+        
+        monthly_data = []
+        for _, row in monthly_sales_unit_price.iterrows():
+            monthly_data.append({'product': row['product'], 'sale': row['sale'], 'unit_price': row['unit_price']})
+        
+        result.append({'month': str(period), 'monthly_sale': monthly_data})
+
+    return result
 
 try:
     credential = {
@@ -24,7 +63,7 @@ try:
         "auth_uri": "https://accounts.google.com/o/oauth2/auth",
         "token_uri": "https://oauth2.googleapis.com/token",
         "auth_provider_x509_cert_url": os.environ.get("AUTH_PROVIDER_X509_CERT_URL"),
-        "client_x509_cert_url": os.environ.get("CLIENT_X509_CERT_URL")
+        "client_x509_cert_url": os.environ.get("AUTH_PROVIDER_X509_CERT_URL")
     }
     cred = credentials.Certificate(credential)
     # cred = credentials.Certificate("./key.json")
@@ -69,25 +108,54 @@ try:
             return response, 200
         except Exception as e:
             return jsonify({"error": str(e)}), 500
+        
+    @app.route('/api/receive_string', methods=['POST'])
+    def receive_string():
+        data = request.json  # Assuming data is sent in JSON format
+        if 'my_string' in data:
+            received_string = data['my_string']
+            file_path = received_string
+            # Process the received string as needed
+            # result = {'message': f'Success! Received string: {received_string}'}
+            try:
+                bucket_name = "analytixnexa.appspot.com"  # Replace with your actual bucket name
+                bucket = storage.bucket(bucket_name)
+                blob = bucket.blob(file_path)
+                if blob.exists():
+                    content = blob.download_as_text()
+
+                    # Convert content to DataFrame
+                    df = pd.read_csv(StringIO(content))
+                    
+                    response = jsonify({
+                        "product_preference_analysis": {
+                            "product_count": product_preference_analysis(df)
+                        },
+                        "sale_analysis": {
+                            "total_sale": int(sales_analysis(df)[0]),
+                            "average_sale": int(sales_analysis(df)[1])
+                        },
+                        "customer_behavior_analysis": {
+                            "unique_customer": customer_behavior_analysis(df)
+                        },
+                        "temporal_analysis": {
+                            "temporal_analysis": temporal_analysis(df)
+                        }
+                        
+                    })
+                    # response = jsonify({"message": f"File '{file_path}' exists in Firebase Storage"})
+                    return response, 200
+                else:
+                    response = jsonify({"message": f"File '{file_path}' does not exist in Firebase Storage"})
+                    return response, 404  # Not Found
+            except Exception as e:
+                return jsonify({"error": str(e)}), 500  # Internal Server Error
+        else:
+            return jsonify({'error': 'Missing or invalid data'}), 400
 except Exception as e:
     @app.route('/')
     def home():
-        return render_template('error.html')
-    @app.route('/bad')
-    def bad():
-        credential = {
-        "type": "service_account",
-        "project_id": "analytixnexa",
-        "private_key_id": os.environ.get("PRIVATE_KEY_ID").strip("'"),
-        "private_key": os.environ.get("PRIVATE_KEY").replace('\n', '\n').strip("'"),  # CHANGE HERE
-        "client_email": os.environ.get("CLIENT_EMAIL").strip("'"),
-        "client_id": os.environ.get("CLIENT_ID").strip("'"),
-        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-        "token_uri": "https://oauth2.googleapis.com/token",
-        "auth_provider_x509_cert_url": os.environ.get("AUTH_PROVIDER_X509_CERT_URL").strip("'"),
-        "client_x509_cert_url": os.environ.get("CLIENT_X509_CERT_URL").strip("'")
-        }
-        return credential
+        return render_template('home.html')
     
     print("Error loading Firebase Admin key:", e)
 if __name__ == '__main__':
