@@ -13,7 +13,6 @@ app = Flask(__name__)
 CORS(app, origins=["*"])
 app.config['TEMPLATES_AUTO_RELOAD'] = True
 
-# Initialize Firebase Admin SDK
 def product_preference_analysis(dataset):
     # Example: Count the occurrences of each product
     product_counts = dataset['product'].value_counts()
@@ -52,6 +51,7 @@ def temporal_analysis(dataset):
 
     return result
 
+# Initialize Firebase Admin SDK
 try:
     credential = {
         "type": "service_account",
@@ -66,10 +66,7 @@ try:
         "client_x509_cert_url": os.environ.get("AUTH_PROVIDER_X509_CERT_URL")
     }
     cred = credentials.Certificate(credential)
-    # cred = credentials.Certificate("./key.json")
-        
-    # firebase_admin.initialize_app(cred)
-
+   
     firebase_admin.initialize_app(cred, {"storageBucket": "analytixnexa.appspot.com"})
 
     def list_files(bucket_name):
@@ -90,7 +87,6 @@ try:
     @app.route('/api/list_files', methods=['GET'])
     def api_list_files():
         try:
-            # Replace 'your-firebase-storage-bucket-url' with your actual Firestore Storage bucket URL
             bucket_name = "analytixnexa.appspot.com"
             
             
@@ -118,7 +114,7 @@ try:
             # Process the received string as needed
             # result = {'message': f'Success! Received string: {received_string}'}
             try:
-                bucket_name = "analytixnexa.appspot.com"  # Replace with your actual bucket name
+                bucket_name = "analytixnexa.appspot.com" 
                 bucket = storage.bucket(bucket_name)
                 blob = bucket.blob(file_path)
                 if blob.exists():
